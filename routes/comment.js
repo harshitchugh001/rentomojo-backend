@@ -44,7 +44,7 @@ router.post('/like', async (req, res) => {
     // console.log(typeof(Number(comment.user)));
     // console.log(typeof(userId));
     if (comment.user == userId) {
-      return res.status(400).json({ message: 'You are not allowed to like your own comment' });
+      return res.status(200).json({ message: 'You are not allowed to like your own comment' });
     }
 
     const hasLiked = comment.user_actions.includes(userId);
@@ -72,7 +72,7 @@ router.post('/dislike', async (req, res) => {
     }
 
     if (comment.user == userId) {
-      return res.status(400).json({ message: 'You are not allowed to dislike your own comment' });
+      return res.status(200).json({ message: 'You are not allowed to dislike your own comment' });
     }
 
     const hasDisliked = comment.user_actions.includes(userId);

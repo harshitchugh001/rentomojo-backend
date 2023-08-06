@@ -25,6 +25,7 @@ mongoose.connection.on("error", err => {
 // import routes
 const authRoutes = require('./routes/auth');
 const commentRoutes = require('./routes/comment');
+const nestedCommentRoutes = require('./routes/nestedcomments');
 
 
 app.get('/', (req, res) => {
@@ -40,6 +41,7 @@ app.use(cors());
 // middleware
 app.use('/api', authRoutes);
 app.use('/api', commentRoutes);
+app.use('/api', nestedCommentRoutes);
 
 
 const port = process.env.PORT || 8000;
