@@ -43,13 +43,15 @@ router.post('/post-nested-comment', async (req, res) => {
     const { text, parentCommentId, userId } = req.body;
 
     const collectionName = `nested_comments_${parentCommentId}`;
+    const NestedCommentModel = mongoose.model('NestedComment', NestedCommentSchema, collectionName);
+    console.log(collectionName);
 
-    const newNestedComment = new NestedComment({
+    const newNestedComment = new NestedCommentModel({
       user: userId,
       text,
       parentCommentId,
     });
-
+    
     await newNestedComment.save();
 
     return res.status(201).json(newNestedComment);
@@ -85,14 +87,22 @@ router.post('/nested-like', async (req, res) => {
 
     const NestedCommentModel = mongoose.model('NestedComment', NestedCommentSchema, collectionName);
     const nestedComment = await NestedCommentModel.findById(commentId);
+    console.log(nestedComment);
 
     if (!nestedComment) {
-      return res.status(404).json({ message: 'Nested comment not found.' });
+      return res.status(200).json({ message: 'Nested comment not found.' });
     }
 
     if (nestedComment.user_actions.includes(userId)) {
-      return res.status(400).json({ message: 'User has already liked this comment.' });
+      return res.status(200).json({ message: 'User has already liked this comment.' });
     }
+    if (nestedComment.user == userId) {
+      // console.log(nestedComment.user,userId);
+      // console.log("not liked");
+      return res.status(200).json({ message: 'You are not allowed to like your own comment' });
+      
+    }
+    
 
     
     nestedComment.user_actions.push(userId);
@@ -112,6 +122,7 @@ router.post('/nested-dislike', async (req, res) => {
   try {
     const { parentCommentId, commentId, userId } = req.body;
     console.log(req.body);
+  
 
     const collectionName = `nested_comments_${parentCommentId}`;
 
@@ -119,13 +130,19 @@ router.post('/nested-dislike', async (req, res) => {
     const nestedComment = await NestedCommentModel.findById(commentId);
 
     if (!nestedComment) {
-      return res.status(404).json({ message: 'Nested comment not found.' });
+      return res.status(200).json({ message: 'Nested comment not found.' });
     }
 
     if (nestedComment.user_actions.includes(userId)) {
-      return res.status(400).json({ message: 'User has already disliked this comment.' });
+      return res.status(200).json({ message: 'User has already disliked this comment.' });
     }
-
+    if (nestedComment.user == userId) {
+      // console.log(nestedComment.user,userId);
+      // console.log("not liked");
+      return res.status(200).json({ message: 'You are not allowed to like your own comment' });
+      
+    }
+    // console.log("liked");
     
     if (nestedComment.user_actions.includes(userId)) {
       nestedComment.user_actions = nestedComment.user_actions.filter((action) => action !== userId);
