@@ -20,13 +20,23 @@ router.post('/post-comments', async (req, res) => {
 
 router.get('/get-comments', async (req, res) => {
   try {
-    const comments = await Comment.find();
+    const page = parseInt(req.query.page) || 1;
+    const perPage = parseInt(req.query.perPage) || 10;
+
+    const skip = (page - 1) * perPage;
+    const comments = await Comment.find()
+      .sort({ _id: -1 }) 
+      .skip(skip)
+      .limit(perPage);
+
     res.json(comments);
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: 'Error fetching comments' });
   }
 });
+
+
 
 router.post('/like', async (req, res) => {
   try {

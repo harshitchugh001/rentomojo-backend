@@ -97,8 +97,7 @@ router.post('/nested-like', async (req, res) => {
       return res.status(200).json({ message: 'User has already liked this comment.' });
     }
     if (nestedComment.user == userId) {
-      // console.log(nestedComment.user,userId);
-      // console.log("not liked");
+      
       return res.status(200).json({ message: 'You are not allowed to like your own comment' });
       
     }
