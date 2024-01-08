@@ -48,8 +48,8 @@ app.get('/', (req, res) => {
 // app middlewares
 app.use(morgan('dev'));
 app.use(bodyParser.json());
-app.use(allowSpecificOrigin);
-// app.use(cors()); 
+// app.use(allowSpecificOrigin);
+app.use(cors(allowSpecifiedOrigin)); 
 
 
 // middleware
