@@ -27,6 +27,19 @@ const authRoutes = require('./routes/auth');
 const commentRoutes = require('./routes/comment');
 const nestedCommentRoutes = require('./routes/nestedcomments');
 
+const allowSpecificOrigin = (req, res, next) => {
+  const allowedOrigin = 'https://glistening-manatee-1be664.netlify.app/';
+  const requestOrigin = req.headers.origin;
+
+  if (requestOrigin === allowedOrigin) {
+    
+    res.setHeader('Access-Control-Allow-Origin', requestOrigin);
+    next();
+  } else {
+    res.status(403).json({ error: 'Forbidden: Access denied for this origin' });
+  }
+};
+
 
 app.get('/', (req, res) => {
     res.send('Hello from Node API');
@@ -35,7 +48,8 @@ app.get('/', (req, res) => {
 // app middlewares
 app.use(morgan('dev'));
 app.use(bodyParser.json());
-app.use(cors()); 
+app.use(allowSpecificOrigin);
+// app.use(cors()); 
 
 
 // middleware
