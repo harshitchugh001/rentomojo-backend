@@ -42,45 +42,23 @@ app.use(morgan('dev'));
 app.use(bodyParser.json());
 app.use(cors({ origin: allowSpecificOrigin }));
 
+// Middleware to check specific origin before routing
+const checkOriginAndRoute = (req, res, next) => {
+  allowSpecificOrigin(req.headers.origin, (err, options) => {
+    if (err || !options.origin) {
+      // Return Access Denied for non-permitted origins
+      res.status(403).json({ error: 'Forbidden: Access denied for this origin' });
+    } else {
+      // Move to the next middleware to process the routes
+      next();
+    }
+  });
+};
+
 // routes
-app.use('/api', (req, res, next) => {
-  // For authenticated routes
-  // Check for specific URL origin before allowing access
-  allowSpecificOrigin(req.headers.origin, (err, options) => {
-    if (err || !options.origin) {
-      res.status(403).json({ error: 'Forbidden: Access denied for this origin' });
-    } else {
-      // Move to the next middleware
-      next();
-    }
-  });
-}, authRoutes);
-
-app.use('/api', (req, res, next) => {
-  // For comment routes
-  // Check for specific URL origin before allowing access
-  allowSpecificOrigin(req.headers.origin, (err, options) => {
-    if (err || !options.origin) {
-      res.status(403).json({ error: 'Forbidden: Access denied for this origin' });
-    } else {
-      // Move to the next middleware
-      next();
-    }
-  });
-}, commentRoutes);
-
-app.use('/api', (req, res, next) => {
-  // For nested comment routes
-  // Check for specific URL origin before allowing access
-  allowSpecificOrigin(req.headers.origin, (err, options) => {
-    if (err || !options.origin) {
-      res.status(403).json({ error: 'Forbidden: Access denied for this origin' });
-    } else {
-      // Move to the next middleware
-      next();
-    }
-  });
-}, nestedCommentRoutes);
+app.use('/api', checkOriginAndRoute, authRoutes);
+app.use('/api', checkOriginAndRoute, commentRoutes);
+app.use('/api', checkOriginAndRoute, nestedCommentRoutes);
 
 const port = process.env.PORT || 8000;
 app.listen(port, () => {
@@ -88,4 +66,3 @@ app.listen(port, () => {
 });
 
 module.exports = app;
-
