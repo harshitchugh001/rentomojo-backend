@@ -27,12 +27,11 @@ const commentRoutes = require('./routes/comment');
 const nestedCommentRoutes = require('./routes/nestedcomments');
 
 // Middleware to allow specific origin
-const allowSpecificOrigin = (req, callback) => {
+const allowSpecificOrigin = (origin, callback) => {
   const allowedOrigin = 'https://glistening-manatee-1be664.netlify.app';
 
-  const origin = req.headers.origin;
   if (!origin || origin === allowedOrigin) {
-    callback(null, true);
+    callback(null, { origin: true });
   } else {
     callback(new Error('Forbidden: Access denied for this origin'));
   }
@@ -47,8 +46,8 @@ app.use(cors({ origin: allowSpecificOrigin }));
 app.use('/api', (req, res, next) => {
   // For authenticated routes
   // Check for specific URL origin before allowing access
-  allowSpecificOrigin(req, (err, allowed) => {
-    if (err || !allowed) {
+  allowSpecificOrigin(req.headers.origin, (err, options) => {
+    if (err || !options.origin) {
       res.status(403).json({ error: 'Forbidden: Access denied for this origin' });
     } else {
       // Move to the next middleware
@@ -60,8 +59,8 @@ app.use('/api', (req, res, next) => {
 app.use('/api', (req, res, next) => {
   // For comment routes
   // Check for specific URL origin before allowing access
-  allowSpecificOrigin(req, (err, allowed) => {
-    if (err || !allowed) {
+  allowSpecificOrigin(req.headers.origin, (err, options) => {
+    if (err || !options.origin) {
       res.status(403).json({ error: 'Forbidden: Access denied for this origin' });
     } else {
       // Move to the next middleware
@@ -73,8 +72,8 @@ app.use('/api', (req, res, next) => {
 app.use('/api', (req, res, next) => {
   // For nested comment routes
   // Check for specific URL origin before allowing access
-  allowSpecificOrigin(req, (err, allowed) => {
-    if (err || !allowed) {
+  allowSpecificOrigin(req.headers.origin, (err, options) => {
+    if (err || !options.origin) {
       res.status(403).json({ error: 'Forbidden: Access denied for this origin' });
     } else {
       // Move to the next middleware
@@ -89,3 +88,4 @@ app.listen(port, () => {
 });
 
 module.exports = app;
+
