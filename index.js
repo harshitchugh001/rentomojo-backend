@@ -26,10 +26,11 @@ const authRoutes = require('./routes/auth');
 const commentRoutes = require('./routes/comment');
 const nestedCommentRoutes = require('./routes/nestedcomments');
 
-// Allow only specific origin
-const allowSpecificOrigin = (origin, callback) => {
+// Middleware to allow specific origin
+const allowSpecificOrigin = (req, callback) => {
   const allowedOrigin = 'https://glistening-manatee-1be664.netlify.app';
 
+  const origin = req.headers.origin;
   if (!origin || origin === allowedOrigin) {
     callback(null, true);
   } else {
@@ -43,9 +44,44 @@ app.use(bodyParser.json());
 app.use(cors({ origin: allowSpecificOrigin }));
 
 // routes
-app.use('/api', authRoutes);
-app.use('/api', commentRoutes);
-app.use('/api', nestedCommentRoutes);
+app.use('/api', (req, res, next) => {
+  // For authenticated routes
+  // Check for specific URL origin before allowing access
+  allowSpecificOrigin(req, (err, allowed) => {
+    if (err || !allowed) {
+      res.status(403).json({ error: 'Forbidden: Access denied for this origin' });
+    } else {
+      // Move to the next middleware
+      next();
+    }
+  });
+}, authRoutes);
+
+app.use('/api', (req, res, next) => {
+  // For comment routes
+  // Check for specific URL origin before allowing access
+  allowSpecificOrigin(req, (err, allowed) => {
+    if (err || !allowed) {
+      res.status(403).json({ error: 'Forbidden: Access denied for this origin' });
+    } else {
+      // Move to the next middleware
+      next();
+    }
+  });
+}, commentRoutes);
+
+app.use('/api', (req, res, next) => {
+  // For nested comment routes
+  // Check for specific URL origin before allowing access
+  allowSpecificOrigin(req, (err, allowed) => {
+    if (err || !allowed) {
+      res.status(403).json({ error: 'Forbidden: Access denied for this origin' });
+    } else {
+      // Move to the next middleware
+      next();
+    }
+  });
+}, nestedCommentRoutes);
 
 const port = process.env.PORT || 8000;
 app.listen(port, () => {
