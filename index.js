@@ -1,6 +1,5 @@
 const express = require('express');
 const morgan = require('morgan');
-const cors = require('cors');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 require('dotenv').config();
@@ -26,39 +25,33 @@ const authRoutes = require('./routes/auth');
 const commentRoutes = require('./routes/comment');
 const nestedCommentRoutes = require('./routes/nestedcomments');
 
-// Middleware to allow specific origin
-const allowSpecificOrigin = (origin, callback) => {
-  const allowedOrigin = 'https://glistening-manatee-1be664.netlify.app';
-
-  if (!origin || origin === allowedOrigin) {
-    callback(null, { origin: true });
-  } else {
-    callback(new Error('Forbidden: Access denied for this origin'));
-  }
-};
-
 // app middlewares
 app.use(morgan('dev'));
 app.use(bodyParser.json());
-app.use(cors({ origin: allowSpecificOrigin }));
 
-// Middleware to check specific origin before routing
-const checkOriginAndRoute = (req, res, next) => {
-  allowSpecificOrigin(req.headers.origin, (err, options) => {
-    if (err || !options.origin) {
-      // Return Access Denied for non-permitted origins
-      res.status(403).json({ error: 'Forbidden: Access denied for this origin' });
-    } else {
-      // Move to the next middleware to process the routes
-      next();
-    }
-  });
+// Middleware to allow specific origin
+const allowSpecificOrigin = (req, res, next) => {
+  const allowedOrigin = 'https://glistening-manatee-1be664.netlify.app';
+  const requestOrigin = req.headers.origin;
+
+  if (requestOrigin === allowedOrigin) {
+    res.setHeader('Access-Control-Allow-Origin', requestOrigin);
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST'); // Add other allowed methods here
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    next();
+  } else {
+    res.status(403).json({ error: 'Forbidden: Access denied for this origin' });
+  }
 };
 
 // routes
-app.use('/api', checkOriginAndRoute, authRoutes);
-app.use('/api', checkOriginAndRoute, commentRoutes);
-app.use('/api', checkOriginAndRoute, nestedCommentRoutes);
+app.get('/', (req, res) => {
+  res.send('Hello from Node API');
+});
+
+app.use('/api', allowSpecificOrigin, authRoutes);
+app.use('/api', allowSpecificOrigin, commentRoutes);
+app.use('/api', allowSpecificOrigin, nestedCommentRoutes);
 
 const port = process.env.PORT || 8000;
 app.listen(port, () => {
